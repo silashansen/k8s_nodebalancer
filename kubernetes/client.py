@@ -4,14 +4,21 @@ from typing import List
 class KubernetesClient:
     """Handles interactions with the Kubernetes cluster via kubectl."""
     
-    @staticmethod
-    def execute_command(command: str, dry_run: bool = False) -> str:
+    def __init__(self, dry_run: bool = False):
+        """
+        Initialize the KubernetesClient.
+        
+        Args:
+            dry_run: If True, will only simulate operations
+        """
+        self.dry_run = dry_run
+    
+    def execute_command(self, command: str) -> str:
         """
         Executes a kubectl command and returns the output.
         
         Args:
             command: The kubectl command to execute (without 'kubectl' prefix)
-            dry_run: If True, will only print commands that would modify the cluster
             
         Returns:
             The command output as a string
@@ -21,7 +28,7 @@ class KubernetesClient:
         """
         full_command = ["kubectl"] + command.split()
         
-        if dry_run and any(action in command for action in ["cordon", "uncordon", "delete"]):
+        if self.dry_run and any(action in command for action in ["cordon", "uncordon", "delete"]):
             print(f"[DRY RUN] Would execute: kubectl {command}")
             return ""
             
@@ -30,20 +37,17 @@ class KubernetesClient:
             raise Exception(f"Error executing kubectl command: {result.stderr}")
         return result.stdout
 
-    @classmethod
-    def cordon_node(cls, node: str, dry_run: bool = False) -> None:
+    def cordon_node(self, node: str) -> None:
         """Cordons a node to prevent new pods from being scheduled on it."""
         print(f"Cordoning {node}")
-        cls.execute_command(f"cordon {node}", dry_run)
+        self.execute_command(f"cordon {node}")
 
-    @classmethod
-    def uncordon_node(cls, node: str, dry_run: bool = False) -> None:
+    def uncordon_node(self, node: str) -> None:
         """Uncordons a node to allow new pods to be scheduled on it."""
         print(f"Uncordoning {node}")
-        cls.execute_command(f"uncordon {node}", dry_run)
+        self.execute_command(f"uncordon {node}")
         
-    @classmethod
-    def delete_pod(cls, pod_name: str, namespace: str, dry_run: bool = False) -> None:
+    def delete_pod(self, pod_name: str, namespace: str) -> None:
         """Deletes a pod in the specified namespace."""
         print(f"Deleting pod {pod_name} in namespace {namespace}")
-        cls.execute_command(f"delete pod {pod_name} --namespace {namespace}", dry_run) 
+        self.execute_command(f"delete pod {pod_name} --namespace {namespace}") 

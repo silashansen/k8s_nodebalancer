@@ -15,6 +15,7 @@ class PodManager:
             dry_run: If True, will only simulate operations
         """
         self.dry_run = dry_run
+        self.k8s_client = KubernetesClient(dry_run)
     
     def find_highest_memory_pod(self, target_node: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """
@@ -27,7 +28,7 @@ class PodManager:
             Dictionary with pod information or None if no pods found
         """
         # Fetch all pods across all namespaces with their node assignments
-        pods_info = json.loads(KubernetesClient.execute_command("get pods --all-namespaces -o json"))
+        pods_info = json.loads(self.k8s_client.execute_command("get pods --all-namespaces -o json"))
         pod_namespace_map = {}
         
         for item in pods_info['items']:
@@ -39,7 +40,7 @@ class PodManager:
                 pod_namespace_map[pod_name] = namespace
 
         # Fetch memory usage of all pods
-        pod_usage_output = KubernetesClient.execute_command("top pod --all-namespaces --no-headers")
+        pod_usage_output = self.k8s_client.execute_command("top pod --all-namespaces --no-headers")
         pod_resource_usage = []
         
         for line in pod_usage_output.splitlines():
@@ -81,10 +82,9 @@ class PodManager:
             print(f"Deleting pod {pod_to_delete['pod_name']} in namespace {pod_to_delete['namespace']} "
                   f"using {pod_to_delete['memory_usage_human']} from node {target_node['name']} due to high memory usage.")
             
-            KubernetesClient.delete_pod(
+            self.k8s_client.delete_pod(
                 pod_to_delete['pod_name'], 
-                pod_to_delete['namespace'], 
-                self.dry_run
+                pod_to_delete['namespace']
             )
             return True
         else:

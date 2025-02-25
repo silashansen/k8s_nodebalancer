@@ -16,6 +16,7 @@ class NodeManager:
         """
         self.dry_run = dry_run
         self.node_groups = self._load_node_groups()
+        self.k8s_client = KubernetesClient(dry_run)
     
     def _load_node_groups(self) -> Dict[str, List[str]]:
         """
@@ -48,7 +49,7 @@ class NodeManager:
         Returns:
             List of dictionaries with node utilization data
         """
-        output = KubernetesClient.execute_command("top nodes --no-headers")
+        output = self.k8s_client.execute_command("top nodes --no-headers")
         usage_data = []
         
         for line in output.splitlines():
@@ -99,7 +100,7 @@ class NodeManager:
             nodes: List of node names to cordon
         """
         for node in nodes:
-            KubernetesClient.cordon_node(node, self.dry_run)
+            self.k8s_client.cordon_node(node)
 
     def uncordon_nodes(self, nodes: List[str]) -> None:
         """
@@ -109,4 +110,4 @@ class NodeManager:
             nodes: List of node names to uncordon
         """
         for node in nodes:
-            KubernetesClient.uncordon_node(node, self.dry_run) 
+            self.k8s_client.uncordon_node(node) 

@@ -58,8 +58,21 @@ In the `node_groups.json` file, you MUST define the node groups you want to bala
 
 To balance the nodes once the difference between the highest and lowest memory usage is greater than 10%:
 
-`python3 balance_nodes.py <node_group> <threshold> [--dry-run]`
+```
+python3 main.py [-h] [--threshold THRESHOLD] [--dry-run] node_group
+
+positional arguments:
+  node_group            Node group to balance. Available groups: <groups_in_node_groups.json>
+
+options:
+  -h, --help            show this help message and exit
+  --threshold, -t THRESHOLD
+                        Threshold for node balancing (default: 10)
+  --dry-run, -d         Perform a dry run without making actual changes
+```
+
+### Example
 
 ```bash
-python3 main.py non-production 10 --dry-run
+python3 main.py --dry-run --threshold 10 non-production
 ```
