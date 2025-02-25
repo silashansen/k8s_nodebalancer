@@ -1,0 +1,6 @@
+.vscode/
+.git/
+.venv
+**/__pycache__/**
+node_balancer/kubernetes/__pycache__/**
+**/*.pyc
